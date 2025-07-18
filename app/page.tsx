@@ -1,92 +1,74 @@
-'use client'
-import React, { useEffect, useState } from 'react'
-import api from '@/api'
-import { jwtDecode } from 'jwt-decode'
-import { useRouter } from 'next/navigation'
+"use client";
+import React, { useEffect, useState } from "react";
+import ContentDisplayer from "@/Components/Home/ContentDisplayer";
+import Navigation from "@/Components/Navigation/Navigation";
+import { useAuth, AuthProvider } from "@/Components/Auth/AuthProvider";
+import { useRouter, usePathname } from "next/navigation";
 
+type Video = {
+  id: number;
+  url: string | null;
+  title: string | null;
+  description: string | null;
+  thumbnails: string | null;
+  date: string | null;
+};
+
+type Category = {
+  id: number;
+  name: string;
+  date: string;
+};
+
+type ResultItem = {
+  id: number;
+  video: Video[];
+  category: Category;
+  title: string;
+  bgimage: string | null;
+  played_hour: number;
+  description: string | null;
+  date: string | null;
+};
+
+type ContentType = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ResultItem[];
+};
 
 const Page = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
-    const [authError, setAuthError] = useState<boolean | string>(false)
-    const router = useRouter()
+  const { isAuthenticated, loading } = useAuth();
+  const [content, setContent] = useState<ContentType>();
 
-    const isTokenExpired = (token: string) => {
-        const decoded_tokens: any = jwtDecode(token)
-        const currentTime = Math.floor(Date.now() / 1000);
-        if (decoded_tokens?.exp >= currentTime) {
-            return false
-        } else {
-            return true
-        }
+  const router = useRouter();
 
+  useEffect(() => {
+    if (isAuthenticated != null && !isAuthenticated) {
+      router.push("/onboarding");
     }
+  }, [isAuthenticated]);
 
-    const getTokens = () => {
-        try {
-            const tokens = localStorage.getItem('tokens')
-            if (tokens) {
-                return JSON.parse(tokens)
-            } else {
-                throw 'not found'
-            }
-        } catch (error) {
-            return null
-        }
-    }
-
-    const refreshTheToken = async (refresh: string) => {
-        if (!refresh) return;
-        try {
-            const result: any = api.post('/auth/jwt/refresh/', {
-                refresh: refresh
-            })
-            localStorage.setItem('tokens', JSON.stringify(result.data))
-            mainAuth()
-        } catch (error) {
-            setAuthError("Can't Refresh Token Please Try Again !")
-        }
-    }
-
-    const mainAuth = async () => {
-        try {
-            const tokens = getTokens()
-            if (!tokens) {
-              router.push('/onboarding')
-              return;
-            }
-            const { access, refresh } = tokens
-            if (!access) {
-              router.push('/auth')
-              return;
-            }
-            const is_acess_token_expired = isTokenExpired(access)
-            if (is_acess_token_expired) {
-                if (refresh) {
-                    refreshTheToken(refresh)
-                } else {
-                    router.push('/auth')
-                    return
-                }
-            } else {
-                setIsAuthenticated(true)
-            }
-        } catch (error) {
-            setAuthError(true)
-        }
-    }
-
-    useEffect(() => {
-        mainAuth()
-    }, [])
-
-    return (
-        <>{isAuthenticated == null && <div>
-            <h1>AUTHENTICATING .... </h1></div>}
-            {isAuthenticated != null && isAuthenticated && <div>
-
-            </div>}
+  return (
+    <AuthProvider>
+      <div className="w-full overflow-x-hidden">
+        {/* {
+          isAuthenticated &&  */}
+        <>
+          <Navigation setContent={setContent} />
+          <ContentDisplayer content={content} setContent={setContent} />
         </>
-    )
-}
+        <button onClick={()=>router.push('/distract')} className="fixed  bottom-4 left-1/2 transform -translate-x-1/2 px-16 py-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow-lg hover:from-blue-500 hover:to-purple-500 transition-all z-50 pointer-cursor">
+          Distract me
+        </button>
 
-export default Page
+        {/* } */}
+
+        {/* { loading && <div className = "w-full h-[100vh] bg-red">Loading ... </div>} */}
+      </div>
+    </AuthProvider>
+  );
+};
+
+export default Page;

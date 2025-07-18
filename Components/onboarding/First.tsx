@@ -38,7 +38,8 @@ const First = ({setOnBoardingIndex}:any) => {
       ))}
 
       <motion.button
-        className="mt-5 px-6 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition"
+        // className="mt-5 px-6 py-2 bg-white text-black rounded-lg hover:bg-gray-200 transition"
+        className={`mt-6 px-12 py-2 rounded-lg font-medium bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transition-all  hover:from-blue-500 hover:to-purple-500 hover:shadow-xl`}
         initial={{ opacity: 0, y: -30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 8.5, duration: 0.6, ease: 'easeOut' }}

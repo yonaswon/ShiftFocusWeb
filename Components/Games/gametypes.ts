@@ -1,0 +1,1 @@
+export type GameState = 'idle' | 'showing' | 'guessing' | 'correct' | 'incorrect';
